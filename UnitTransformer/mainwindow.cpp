@@ -5,8 +5,7 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QTimeZone>
-#include "weather.h"
-#include "checkweather.h"
+
 
 #include <QtWidgets>
 #include <QtNetwork>
@@ -17,6 +16,9 @@
 #include <QTextStream>
 #include <QPixmap>
 
+
+#include "weather.h"
+#include "currency.h"
 #define DOUBLE_PRECISION 0.0000001
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -37,10 +39,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ////Weather
      //Weather* weather = checkWeather();
     checkWeather();
-    //CheckWeather weather;
-    //weather.Start();
 
-
+   CheckCurrency();
 
 
 
@@ -93,7 +93,7 @@ void MainWindow::checkWeather()
     }
 
     // schedule the request
-    startRequest(newUrl);
+    startRequest_Weather(newUrl);
 
     //QString a = weather();
    // return weather();
@@ -103,16 +103,47 @@ void MainWindow::checkWeather()
 
 }
 
-void MainWindow::startRequest(const QUrl &requestedUrl)
+void MainWindow::CheckCurrency()
 {
-     url = requestedUrl;
+    ////This is the entrance
+    const QString urlSpec = "http://apilayer.net/api/live?access_key=fc70e2f274719cc166b673ad59df749e";
+    // const QString urlSpec = "http://www.google.com";
+    if (urlSpec.isEmpty())
+        return ;
+
+    const QUrl newUrl = QUrl::fromUserInput(urlSpec);
+    if (!newUrl.isValid()) {
+        QMessageBox::information(this, tr("Error"),
+                                 tr("Invalid URL: %1: %2").arg(urlSpec, newUrl.errorString()));
+        return ;
+    }
+
+    // schedule the request
+    StartRequest_Currency(newUrl);
+}
+
+void MainWindow::startRequest_Weather(const QUrl &requestedUrl)
+{
+     url_weather = requestedUrl;
      httpRequestAborted = false;
-     reply = qnam.get(QNetworkRequest(url));
+     reply_weather = qnam_weather.get(QNetworkRequest(url_weather));
 
 
-     connect(reply, &QNetworkReply::finished, this, &MainWindow::httpFinished);
-     connect(reply, &QIODevice::readyRead, this, &MainWindow::httpReadyRead);
+     connect(reply_weather, &QNetworkReply::finished, this, &MainWindow::httpFinished_weather);
+     connect(reply_weather, &QIODevice::readyRead, this, &MainWindow::httpReadyRead_Weather);
 
+}
+
+void MainWindow::StartRequest_Currency(const QUrl &requestedUrl)
+{
+
+    url_currency = requestedUrl;
+    httpRequestAborted = false;
+    reply_currency = qnam_currency.get(QNetworkRequest(url_currency));
+
+
+    connect(reply_currency, &QNetworkReply::finished, this, &MainWindow::httpFinished_currency);
+    connect(reply_currency, &QIODevice::readyRead, this, &MainWindow::httpReadyRead_Currency);
 }
 
 MainWindow::~MainWindow()
@@ -639,19 +670,27 @@ void MainWindow::timeUpdate()
 
 }
 
-void MainWindow::httpFinished()
+void MainWindow::httpFinished_weather()
+{
+
+    int c = 0;
+    reply_weather->deleteLater();
+    reply_weather->disconnect();
+}
+
+void MainWindow::httpFinished_currency()
 {
 
 }
 
-void MainWindow::httpReadyRead()
+void MainWindow::httpReadyRead_Weather()
 {
-    QByteArray allContent = reply->readAll();
+    QByteArray allContent = reply_weather->readAll();
     //const QString valueFromOpenWeather = QString(allContent);
 
-    m_weather = QString(allContent);
+    //m_weather = QString(allContent);
 
-    QString API_Result = weather();
+    QString API_Result = QString(allContent);
 
     Weather* weather = new Weather(this, API_Result);
 
@@ -662,7 +701,8 @@ void MainWindow::httpReadyRead()
     QString iconId_cn = weather->MatchWeatheIdToIconId(weather->weatherId_cn());
     QString iconId_us = weather->MatchWeatheIdToIconId(weather->weatherId_us());
 
-    QString folderPath = "W:/Programming/Qt/UnitTransformer/Fig/";
+    //QString folderPath = "W:/Programming/Qt/UnitTransformer/Fig/";
+    QString folderPath = "Fig/";
     QString fileNameExtension = ".png";
 
     QString iconPath_cn = folderPath + iconId_cn + fileNameExtension;
@@ -684,6 +724,22 @@ void MainWindow::httpReadyRead()
 
 
 //   writeFile(allContent);
+
+}
+
+void MainWindow::httpReadyRead_Currency()
+{
+    QByteArray allContent = reply_currency->readAll();
+
+    m_RealtimeCurrency_All = QString(allContent);
+
+    //QString allContent_QS = QString(allContent);
+    Currency* currency = new Currency(this, QString(allContent));
+
+    QString usd_cny = "USDCNY";
+    currency->ParseCurrency(usd_cny);
+
+    m_rmbToUSD_ratio = currency->currency();
 
 }
 

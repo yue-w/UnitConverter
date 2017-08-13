@@ -22,7 +22,11 @@ public:
     //Weather* checkWeather();
     void  checkWeather();
 
-    void startRequest(const QUrl &requestedUrl);
+    void CheckCurrency();
+
+    void startRequest_Weather(const QUrl &requestedUrl);
+
+    void StartRequest_Currency(const QUrl &requestedUrl);
 
     QString weather() const;
     void setWeather(const QString &weather);
@@ -52,8 +56,10 @@ private slots:
 
 
 private slots:
-    void httpFinished();
-    void httpReadyRead();
+    void httpFinished_weather();
+    void httpFinished_currency();
+    void httpReadyRead_Weather();
+    void httpReadyRead_Currency();
 
 
 private:
@@ -89,12 +95,23 @@ private:
 private:
     QString m_url_Xiangyang;
 
-    QUrl url;
-    QNetworkAccessManager qnam;
-    QNetworkReply *reply;
+    QUrl url_weather;
+    QUrl url_currency;
+    QNetworkAccessManager qnam_weather;
+    QNetworkAccessManager qnam_currency;
+
+    QNetworkReply *reply_weather;
+     QNetworkReply *reply_currency;
+
     bool httpRequestAborted;
 
     QString m_weather;
+
+    //realtime currency from the web
+    QString m_RealtimeCurrency_All;
+
+    //Currency between USD and CNY
+    int m_RealtimeCurrency_USDCNY;
     //void MachWeather(const int id);
 
 };

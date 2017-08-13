@@ -1,0 +1,2 @@
+git push -u gitRemote
+gitRemote is the name of the remote url. If you forget the name, just type git remote

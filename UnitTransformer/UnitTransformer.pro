@@ -27,10 +27,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         mainwindow.cpp \
     weather.cpp \
-    checkweather.cpp
+    currency.cpp
 
 HEADERS  += mainwindow.h \
     weather.h \
-    checkweather.h
+    currency.h
 
 FORMS    += mainwindow.ui
